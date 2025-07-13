@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -116,16 +116,24 @@ export default function Component() {
 
   const ITEMS_PER_PAGE = 20;
 
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
   const handleInputChange = (value: string) => {
     // Only allow letters, max 7 characters
     const filtered = value
       .toUpperCase()
       .replace(/[^A-Z]/g, "")
       .slice(0, 7);
-    setLetters(filtered);
-    // Reset pagination when letters change
-    setOneExtraPage(1);
-    setTwoExtraPage(1);
+    // Debounce setting letters
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    debounceTimeout.current = setTimeout(() => {
+      setLetters(filtered);
+      // Reset pagination when letters change
+      setOneExtraPage(1);
+      setTwoExtraPage(1);
+    }, 2000);
   };
 
   const canMakeWord = (word: string, availableLetters: string): boolean => {
